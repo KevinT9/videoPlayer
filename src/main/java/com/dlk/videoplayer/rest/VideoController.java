@@ -1,4 +1,4 @@
-package com.dlk.videoplayer;
+package com.dlk.videoplayer.rest;
 
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -25,5 +25,10 @@ public class VideoController {
         } else {
             throw new Exception("Video no encontrado");
         }
+    }
+
+    @GetMapping("/play/{songName}")
+    public String playSong(@PathVariable String songName) {
+        return "/videos/" + songName;  // Ruta donde el frontend buscará el video
     }
 }

@@ -1,4 +1,4 @@
-package com.dlk.videoplayer;
+package com.dlk.videoplayer.rest;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

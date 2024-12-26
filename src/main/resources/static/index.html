@@ -17,13 +17,47 @@
 
 <br>
 
-<!-- Lista de videos -->
+<!-- Formulario para reproducir una canción -->
+<h3>Ingresa el nombre de la canción:</h3>
+<input type="text" id="songName" placeholder="Nombre del archivo (ej. video.mp4)">
+<button onclick="loadAndPlaySong()">Reproducir</button>
+
+<br>
+
+<!-- Lista de videos (opcional, si quieres mostrar los videos disponibles) -->
 <h3>Selecciona un video:</h3>
 <ul id="videoList">
   <!-- Los videos se cargarán aquí dinámicamente -->
 </ul>
 
 <script>
+  // Función para cargar y reproducir una canción
+  function loadAndPlaySong() {
+    const songName = document.getElementById("songName").value;
+
+    if (songName) {
+      // Llamar al backend para obtener la URL del video
+      fetch(`/play/${songName}`)
+              .then(response => response.text())
+              .then(url => {
+                // Actualizar el source del video y reproducirlo
+                const videoElement = document.getElementById("videoPlayer");
+                const videoSource = document.getElementById("videoSource");
+                videoSource.src = url;
+                videoElement.load();
+                // Establecer el volumen el 30%
+                videoElement.volume = 0.2;
+                videoElement.play();
+              })
+              .catch(error => {
+                alert("Error: No se encontró el video.");
+                console.error('Error al cargar la canción:', error);
+              });
+    } else {
+      alert("Por favor ingresa el nombre de la canción.");
+    }
+  }
+
   // Función para obtener la lista de videos desde el servidor
   function loadVideoList() {
     fetch('/api/videos')
@@ -32,25 +66,11 @@
               const videoList = document.getElementById("videoList");
               data.forEach(video => {
                 const li = document.createElement('li');
-
-                // Buscar ' y reemplazar por /u0027
-                let videoId = encodeURIComponent(video);
-                videoId = videoId.replace(/'/g, '%27');
-
-                li.innerHTML = `<button href="#" onclick="loadVideo('${videoId}')">${video}</button>`;
+                li.innerHTML = `<a href="#" onclick="loadVideo('${video}')">${video}</a>`;
                 videoList.appendChild(li);
               });
             })
             .catch(error => console.error('Error al cargar los videos:', error));
-  }
-
-  // Función para cargar un video
-  function loadVideo(filename) {
-    const videoElement = document.getElementById("videoPlayer");
-    const videoSource = document.getElementById("videoSource");
-    videoSource.src = `/videos/${filename}`;
-    videoElement.load();
-    videoElement.play();
   }
 
   // Cargar la lista de videos cuando se carga la página
