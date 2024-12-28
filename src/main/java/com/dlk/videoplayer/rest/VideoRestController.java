@@ -25,13 +25,13 @@ public class VideoRestController {
     // Endpoint para recibir el nombre del video desde Postman
     @PostMapping("/play")
     public ResponseEntity<?> playSong(@RequestBody VideoListItem videoListItem) {
-        System.out.println("Recibiendo solicitud para reproducir: " + videoListItem.getFilename());
-        if (videoListItem.getFilename() == null || videoListItem.getFilename().trim().isEmpty()) {
+        System.out.println("Recibiendo solicitud para reproducir: " + videoListItem.filename());
+        if (videoListItem.filename() == null || videoListItem.filename().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Error: El nombre de la canción no puede estar vacío");
         }
 
         // Crear la URL del video
-        String videoUrl = "/videos/" + videoListItem.getFilename();
+        String videoUrl = "/videos/" + videoListItem.filename();
 
         try {
             // Usar WebSocket para enviar la URL del video al frontend

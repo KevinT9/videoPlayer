@@ -23,6 +23,7 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         sessionStorage.removeSession(session.getId());
+        System.out.println("Código de cierre: " + status.getCode());
         System.out.println("Conexión cerrada: " + session.getId());
         logSessions();
     }
