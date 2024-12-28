@@ -4,7 +4,9 @@
 POST http://localhost:8080/play
 Content-Type: application/json
 
-Hoshi no utsuwa sub español HD.mp4
+{
+  "filename": "Hoshi no utsuwa sub español HD.mp4"
+}
 
 
 
