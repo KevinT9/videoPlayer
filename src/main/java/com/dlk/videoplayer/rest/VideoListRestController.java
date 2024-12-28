@@ -10,7 +10,7 @@ import java.util.List;
 import static com.dlk.videoplayer.Constantes.VIDEO_DIR;
 
 @RestController
-public class VideoListController {
+public class VideoListRestController {
 
     @GetMapping("/api/videos")
     public List<String> getVideoList() {
