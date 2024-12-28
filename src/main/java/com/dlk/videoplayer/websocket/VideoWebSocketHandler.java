@@ -1,21 +1,25 @@
 package com.dlk.videoplayer.websocket;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class VideoWebSocketHandler extends TextWebSocketHandler {
 
-    @Autowired
-    private SessionStorage sessionStorage;
+    private final SessionStorage sessionStorage;
+
+    public VideoWebSocketHandler(SessionStorage sessionStorage) {
+        this.sessionStorage = sessionStorage;
+    }
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
-        System.out.println("Conexión establecida: " + session.getId());
+        log.info("Conexión establecida: {}", session.getId());
         sessionStorage.addSession(session.getId(), session);
         logSessions();
     }
@@ -23,32 +27,32 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         sessionStorage.removeSession(session.getId());
-        System.out.println("Código de cierre: " + status.getCode());
-        System.out.println("Conexión cerrada: " + session.getId());
+        log.info("Código de cierre: {}", status.getCode());
+        log.info("Conexión cerrada: {}", session.getId());
         logSessions();
     }
 
     public void sendVideoUrl(String videoUrl) throws Exception {
         if (sessionStorage.getSessions().isEmpty()) {
-            System.out.println("No hay sesiones activas.");
+            log.info("No hay sesiones activas.");
             return;
         }
 
         for (WebSocketSession session : sessionStorage.getSessions().values()) {
-            System.out.println("Sesión activa: " + session.getId());
+            log.info("Sesión activa: {}", session.getId());
             if (session.isOpen()) {
                 session.sendMessage(new TextMessage(videoUrl));
-                System.out.println("Enviando video a la sesión " + session.getId() + ": " + videoUrl);
+                log.info("Enviando video a la sesión {}: {}", session.getId(), videoUrl);
             } else {
-                System.out.println("La sesión " + session.getId() + " no está abierta.");
+                log.info("La sesión {} no está abierta.", session.getId());
             }
         }
     }
 
     private void logSessions() {
-        System.out.println("Sesiones actuales:");
+        log.info("Sesiones actuales:");
         for (String sessionId : sessionStorage.getSessions().keySet()) {
-            System.out.println(" - " + sessionId);
+            log.info(" - {}", sessionId);
         }
     }
 }

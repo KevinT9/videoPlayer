@@ -1,11 +1,13 @@
 package com.dlk.videoplayer.websocket;
 
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 
+@Getter
 @Component
 public class SessionStorage {
 
@@ -19,7 +21,4 @@ public class SessionStorage {
         sessions.remove(sessionId);
     }
 
-    public Map<String, WebSocketSession> getSessions() {
-        return sessions;
-    }
 }

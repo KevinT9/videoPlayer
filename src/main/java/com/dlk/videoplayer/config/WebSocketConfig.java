@@ -12,11 +12,17 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 public class WebSocketConfig implements WebSocketConfigurer {
 
+    /**
+     * Registrando WebSocket handler
+     */
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(myHandler(), "/ws/video").setAllowedOrigins("*");
     }
 
+    /**
+     * Creando un WebSocket handler bean
+     */
     @Bean
     public WebSocketHandler myHandler() {
         return new VideoWebSocketHandler();

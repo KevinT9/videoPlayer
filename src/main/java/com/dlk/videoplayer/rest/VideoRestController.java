@@ -2,6 +2,7 @@ package com.dlk.videoplayer.rest;
 
 import com.dlk.videoplayer.model.dto.VideoListItem;
 import com.dlk.videoplayer.websocket.VideoWebSocketHandler;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import java.nio.file.Paths;
 import static com.dlk.videoplayer.Constantes.VIDEO_DIR;
 
 @RestController
+@Slf4j
 public class VideoRestController {
 
     private final VideoWebSocketHandler videoWebSocketHandler;
@@ -25,7 +27,7 @@ public class VideoRestController {
     // Endpoint para recibir el nombre del video desde Postman
     @PostMapping("/play")
     public ResponseEntity<?> playSong(@RequestBody VideoListItem videoListItem) {
-        System.out.println("Recibiendo solicitud para reproducir: " + videoListItem.filename());
+        log.info("Recibiendo solicitud para reproducir: {}", videoListItem.filename());
         if (videoListItem.filename() == null || videoListItem.filename().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Error: El nombre de la canción no puede estar vacío");
         }
@@ -35,7 +37,6 @@ public class VideoRestController {
 
         try {
             // Usar WebSocket para enviar la URL del video al frontend
-            System.out.println("Enviando video: " + videoUrl);
             videoWebSocketHandler.sendVideoUrl(videoUrl);
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error al enviar el video: " + e.getMessage());
@@ -47,7 +48,7 @@ public class VideoRestController {
     // Endpoint para servir el video
     @GetMapping("/videos/{filename}")
     public ResponseEntity<Resource> getVideo(@PathVariable String filename) throws Exception {
-        System.out.println("Solicitando video: " + filename);
+        log.info("Solicitando video: {}", filename);
         Path videoPath = Paths.get(VIDEO_DIR).resolve(filename).normalize();
         Resource video = new UrlResource(videoPath.toUri());
 
