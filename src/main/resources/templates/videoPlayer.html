@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reproductor de Video</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background-color: darkgrey;
+        }
+        h1 {
+            text-align: center;
+        }
+
+        #videoPlayer {
+            display: block;
+            margin: 0 auto;
+        }
+    </style>
 </head>
 <body>
 
@@ -19,7 +33,7 @@
 
 <script>
     // Conectar al WebSocket
-    const socket = new WebSocket('ws://localhost:8080/ws/video');
+    const socket = new WebSocket('wss://const-deutsch-repeated-thee.trycloudflare.com/ws/video');
 
     // Cuando el WebSocket esté abierto, el cliente está listo para recibir mensajes
     socket.onopen = function () {

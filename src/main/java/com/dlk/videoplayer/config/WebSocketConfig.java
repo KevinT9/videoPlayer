@@ -1,5 +1,6 @@
 package com.dlk.videoplayer.config;
 
+import com.dlk.videoplayer.websocket.SessionStorage;
 import com.dlk.videoplayer.websocket.VideoWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,10 +22,18 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     /**
-     * Creando un WebSocket handler bean
+     * Create the WebSocket handler bean
      */
     @Bean
     public WebSocketHandler myHandler() {
-        return new VideoWebSocketHandler();
+        return new VideoWebSocketHandler(sessionStorage());
+    }
+
+    /**
+     * Creando el almacenamiento de sesiones bean
+     */
+    @Bean
+    public SessionStorage sessionStorage() {
+        return new SessionStorage();
     }
 }
