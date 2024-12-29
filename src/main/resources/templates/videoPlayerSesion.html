@@ -39,10 +39,6 @@
     // Variable para almacenar la conexión WebSocket
     let socket = null;
 
-    // Generamos un ID único de sesión en el cliente
-    // const sessionId = "session-" + Math.random().toString(36).substr(2, 9); // Genera un ID único simple
-    // document.getElementById("sessionId").innerText = sessionId; // Mostramos el ID en el HTML
-
     let sessionId = document.getElementById("sessionId").innerText;
 
     // Función para crear una nueva conexión WebSocket
@@ -53,8 +49,6 @@
             return; // Si ya está abierta, no creamos una nueva
         }
 
-        // Si la url es htttps://loves-sharp-hall-bridge.trycloudflare.com/test/test2/test3/video como obtener
-        // el loves-sharp-hall-bridge.trycloudflare.com de la url
         let url = window.location.href;
         let urlSplit = url.split("/");
         let urlBase = urlSplit[2];
