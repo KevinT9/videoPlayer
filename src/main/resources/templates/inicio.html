@@ -113,22 +113,26 @@
     document.getElementById('crearSesionForm').addEventListener('submit', function (event) {
         event.preventDefault();
         const nombreSesion = document.getElementById('nombreSesion').value;
-        fetch('/api/sesiones/create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({nombre: nombreSesion})
-        })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                })
-                .then(data => {
-                    console.log('Sesión creada:', data);
-                })
-                .catch(error => console.error('Error al crear la sesión:', error));
+
+        window.location.href = '/sesiones/play/' + nombreSesion;
+
+
+        // fetch('/api/sesiones/create', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     },
+        //     body: JSON.stringify({nombre: nombreSesion})
+        // })
+        //         .then(response => {
+        //             if (!response.ok) {
+        //                 throw new Error('Network response was not ok');
+        //             }
+        //         })
+        //         .then(data => {
+        //             console.log('Sesión creada:', data);
+        //         })
+        //         .catch(error => console.error('Error al crear la sesión:', error));
     });
 
     // Cargar la lista de sesiones al cargar la página

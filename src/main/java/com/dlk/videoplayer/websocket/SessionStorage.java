@@ -22,8 +22,18 @@ public class SessionStorage {
     }
 
     // Buscar por la clave del Map y retornar el valor
-    public WebSocketSession getSession(String sessionId) {
-        return sessions.get(sessionId);
+    public WebSocketSession getSession(String clave) {
+        return sessions.get(clave);
+    }
+
+    // Buscar por el valor del Map y retornar la clave
+    public String getKey(WebSocketSession valor) {
+        for (Map.Entry<String, WebSocketSession> entry : sessions.entrySet()) {
+            if (entry.getValue().equals(valor)) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
 }
