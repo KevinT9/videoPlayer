@@ -1,5 +1,6 @@
 package com.dlk.videoplayer.websocket.handler;
 
+import com.dlk.videoplayer.model.dto.VideoSession;
 import com.dlk.videoplayer.websocket.SessionStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -37,7 +38,7 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
-        log.info("Mensaje recibido de la sesión {}: {}", session.getId(), message.getPayload());
+//        log.info("Mensaje recibido de la sesión {}: {}", session.getId(), message.getPayload());
         // Recibir el mensaje del cliente
         String payload = message.getPayload();
         // Parsear el mensaje
@@ -50,6 +51,37 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
 
             log.info("Sesión registrada con ID: {}", sessionId);
         }
+
+
+        if (jsonMessage.getString("type").equals("videoState")) {
+            // Obtener el videoUrl, currentTime y isPlaying
+            String claveSesion = jsonMessage.getString("sessionId");
+            String videoUrl = jsonMessage.getString("videoUrl");
+            double currentTime = jsonMessage.getDouble("currentTime");
+            boolean isPlaying = jsonMessage.getBoolean("isPlaying");
+
+            // Crear un objeto VideoSession y actualizar su estado
+            VideoSession videoSession = new VideoSession();
+            videoSession.updateState(videoUrl, currentTime, isPlaying);
+
+            WebSocketSession sessionW = sessionStorage.getSession(claveSesion);
+
+            if (sessionW.isOpen()) {
+                try {
+                    sessionW.sendMessage(new TextMessage("{ \"type\": \"videoInfo\", \"videoUrl\": \""
+                            + videoSession.getVideoUrl() + "\", \"currentTime\": "
+                            + videoSession.getCurrentTime() + " }"));
+//                    log.info("Actualizando el estado de {}: {}", sessionW.getId(), videoUrl);
+                } catch (Exception e) {
+                    log.error("Error al enviar el video a la sesión {}: {}", sessionW.getId(), e.getMessage());
+                }
+            } else {
+                log.info("La sesión {} no está abierta, no se actualizo el estado", sessionW.getId());
+            }
+
+
+        }
+
     }
 
     // Metodo para enviar un video a una sesión en específico
@@ -58,7 +90,15 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
 
         for (WebSocketSession session : sessionStorage.getSessions().values()) {
             if (session.isOpen() && session.getId().equals(sessionId)) {
-                session.sendMessage(new TextMessage(videoUrl));
+//                session.sendMessage(new TextMessage(videoUrl));
+
+                VideoSession videoSession = new VideoSession();
+                videoSession.updateState(videoUrl, 0, false);
+
+
+                session.sendMessage(new TextMessage("{ \"type\": \"videoInfo\", \"videoUrl\": \""
+                        + videoSession.getVideoUrl() + "\", \"currentTime\": "
+                        + videoSession.getCurrentTime() + " }"));
                 log.info("Enviando video a la sesión {}: {}", session.getId(), videoUrl);
             } else {
                 log.info("La sesión {} no está abierta.", session.getId());
