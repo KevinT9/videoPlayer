@@ -2,7 +2,6 @@ package com.dlk.videoplayer.rest;
 
 import com.dlk.videoplayer.model.dto.SesionesDTO;
 import com.dlk.videoplayer.websocket.SessionStorage;
-import jakarta.websocket.Session;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
