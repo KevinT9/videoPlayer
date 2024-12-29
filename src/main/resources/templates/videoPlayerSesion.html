@@ -53,8 +53,15 @@
             return; // Si ya está abierta, no creamos una nueva
         }
 
+        // Si la url es htttps://loves-sharp-hall-bridge.trycloudflare.com/test/test2/test3/video como obtener
+        // el loves-sharp-hall-bridge.trycloudflare.com de la url
+        let url = window.location.href;
+        let urlSplit = url.split("/");
+        let urlBase = urlSplit[2];
+        console.log("urlBase: ", urlBase);
+
         // Conectar al WebSocket
-        socket = new WebSocket('wss://loves-sharp-hall-bridge.trycloudflare.com/ws/video');
+        socket = new WebSocket('wss://' + urlBase + '/ws/video');
 
         // Cuando el WebSocket esté abierto, el cliente está listo para recibir mensajes
         socket.onopen = function () {
