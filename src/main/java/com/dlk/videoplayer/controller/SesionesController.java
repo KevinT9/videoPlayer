@@ -16,8 +16,8 @@ public class SesionesController {
         return "inicio";
     }
 
-    @RequestMapping("/join/{sessionId}")
-    String joinSession(@PathVariable String sessionId, Model model) {
+    @RequestMapping("/lista/{sessionId}")
+    String obtenerListaSesiones(@PathVariable String sessionId, Model model) {
         SesionesDTO sesionesDTO = new SesionesDTO();
         sesionesDTO.setSessionId(sessionId);
         sesionesDTO.setNombre(sessionId);

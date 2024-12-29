@@ -1,5 +1,6 @@
-package com.dlk.videoplayer.websocket;
+package com.dlk.videoplayer.websocket.handler;
 
+import com.dlk.videoplayer.websocket.SessionStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.web.socket.CloseStatus;
@@ -21,13 +22,11 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         log.info("Conexión establecida: {}", session.getId());
-//        sessionStorage.addSession(session.getId(), session);
         logSessions();
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
-
         String clave = sessionStorage.getKey(session);
 
         sessionStorage.removeSession(clave);
@@ -47,23 +46,9 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
         if (jsonMessage.getString("type").equals("registerSession")) {
             // Obtener el sessionId y registrarlo
             String sessionId = jsonMessage.getString("sessionId");
-            sessionStorage.addSession(sessionId, session);  // Almacenar la sesión con el sessionId
+            sessionStorage.addSession(sessionId, session);
 
             log.info("Sesión registrada con ID: {}", sessionId);
-        }
-        // Manejar otros tipos de mensaje...
-    }
-
-    public void sendVideoUrl(String videoUrl) throws Exception {
-        if (findActiveSession()) return;
-
-        for (WebSocketSession session : sessionStorage.getSessions().values()) {
-            if (session.isOpen()) {
-                session.sendMessage(new TextMessage(videoUrl));
-                log.info("Enviando video a la sesión por defecto {}: {}", session.getId(), videoUrl);
-            } else {
-                log.info("La sesión por defecto {} no está abierta.", session.getId());
-            }
         }
     }
 

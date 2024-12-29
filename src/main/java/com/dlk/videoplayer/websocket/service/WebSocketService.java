@@ -1,7 +1,7 @@
 package com.dlk.videoplayer.websocket.service;
 
 import com.dlk.videoplayer.websocket.SessionStorage;
-import com.dlk.videoplayer.websocket.VideoWebSocketHandler;
+import com.dlk.videoplayer.websocket.handler.VideoWebSocketHandler;
 import org.springframework.stereotype.Service;
 import org.springframework.web.socket.client.WebSocketClient;
 import org.springframework.web.socket.client.standard.StandardWebSocketClient;

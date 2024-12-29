@@ -17,11 +17,9 @@ import java.util.List;
 public class SesionesRestController {
 
     private final SessionStorage sessionStorage;
-    private final WebSocketService webSocketService;
 
-    public SesionesRestController(SessionStorage sessionStorage, WebSocketService webSocketService) {
+    public SesionesRestController(SessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;
-        this.webSocketService = webSocketService;
     }
 
     @GetMapping
@@ -39,32 +37,5 @@ public class SesionesRestController {
         }
 
         return ResponseEntity.ok(listaSesiones);
-    }
-
-    @PostMapping("/join")
-    ResponseEntity<Void> joinSession(@RequestBody SesionesDTO sesionesDTO) {
-        log.info("Unirse a la sesión");
-
-
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping("/create")
-    ResponseEntity<SesionesDTO> createSession(@RequestBody SesionesDTO sesionesDTO) {
-        log.info("Crear sesión");
-        try {
-            // Generar un ID único para la sesión
-
-            String nombreSesion = sesionesDTO.getNombre();
-            // Crear la sesión WebSocket desde el servidor
-            WebSocketSession sesionCreada = webSocketService.createSession(nombreSesion);
-            sesionesDTO.setSessionId(sesionCreada.getId());
-
-            return ResponseEntity.ok(sesionesDTO);
-
-        } catch (Exception e) {
-            log.error("Error al crear la sesión: {}", e.getMessage());
-            return ResponseEntity.status(500).build();
-        }
     }
 }

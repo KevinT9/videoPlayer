@@ -1,7 +1,7 @@
 package com.dlk.videoplayer.websocket.config;
 
 import com.dlk.videoplayer.websocket.SessionStorage;
-import com.dlk.videoplayer.websocket.VideoWebSocketHandler;
+import com.dlk.videoplayer.websocket.handler.VideoWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.WebSocketHandler;

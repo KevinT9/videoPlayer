@@ -101,8 +101,7 @@
                     sesionesList.innerHTML = '';
                     data.forEach(sesion => {
                         const li = document.createElement('li');
-                        // li.innerHTML = `<button onclick="joinSesion('${sesion.id}')">${sesion.nombre}</button>`;
-                        li.innerHTML = `<a href="./sesiones/join/${sesion.sessionId}">${sesion.nombre}</a>`;
+                        li.innerHTML = `<a href="./sesiones/lista/${sesion.sessionId}">${sesion.nombre}</a>`;
                         sesionesList.appendChild(li);
                     });
                 })
@@ -116,23 +115,6 @@
 
         window.location.href = '/sesiones/play/' + nombreSesion;
 
-
-        // fetch('/api/sesiones/create', {
-        //     method: 'POST',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     },
-        //     body: JSON.stringify({nombre: nombreSesion})
-        // })
-        //         .then(response => {
-        //             if (!response.ok) {
-        //                 throw new Error('Network response was not ok');
-        //             }
-        //         })
-        //         .then(data => {
-        //             console.log('Sesión creada:', data);
-        //         })
-        //         .catch(error => console.error('Error al crear la sesión:', error));
     });
 
     // Cargar la lista de sesiones al cargar la página
