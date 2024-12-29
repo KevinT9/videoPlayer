@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class VideoWebSocketHandler extends TextWebSocketHandler {
 
-    private SessionStorage sessionStorage;
+    private final SessionStorage sessionStorage;
 
     public VideoWebSocketHandler(SessionStorage sessionStorage) {
         this.sessionStorage = sessionStorage;

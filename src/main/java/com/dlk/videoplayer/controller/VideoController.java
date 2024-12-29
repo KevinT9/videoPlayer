@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/videos")
-public class VideoListController {
+public class VideoController {
 
     @GetMapping
     String getVideoPlayer() {

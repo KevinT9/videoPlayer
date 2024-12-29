@@ -24,16 +24,18 @@
 <h1>Reproductor de Video</h1>
 
 <!-- Reproductor de video -->
-<video id="videoPlayer" width="800" controls>
-    <source id="videoSource" type="video/mp4">
-    Tu navegador no soporta el formato de video.
-</video>
+<section id="videoPlayerContainer">
+    <video id="videoPlayer" width="800" controls>
+        <source id="videoSource" type="video/mp4">
+        Tu navegador no soporta el formato de video.
+    </video>
+</section>
 
 <br>
 
 <script>
     // Conectar al WebSocket
-    const socket = new WebSocket('wss://const-deutsch-repeated-thee.trycloudflare.com/ws/video');
+    const socket = new WebSocket('wss://loves-sharp-hall-bridge.trycloudflare.com/ws/video');
 
     // Cuando el WebSocket esté abierto, el cliente está listo para recibir mensajes
     socket.onopen = function () {

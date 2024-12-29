@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Inicio</title>
+    <style>
+        body{
+            font-family: Arial, sans-serif;
+            background-color: darkgrey;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #SesionesActivas, #CrearSesion {
+            background-color: white;
+            padding: 20px;
+            margin: 20px;
+            border-radius: 10px;
+        }
+
+        #sesionesList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #sesionesList li {
+            margin-bottom: 10px;
+        }
+
+        #sesionesList li button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #sesionesList li button:hover {
+            background-color: #45a049;
+        }
+
+        #crearSesionForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #crearSesionForm label {
+            margin-bottom: 10px;
+        }
+
+        #crearSesionForm input {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+
+        #crearSesionForm button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #crearSesionForm button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<section id="SesionesActivas">
+    <h1>Sesiones Activas</h1>
+    <ul id="sesionesList">
+        <!-- Las sesiones se cargarán aquí dinámicamente -->
+    </ul>
+</section>
+
+<section id="CrearSesion">
+    <h1>Crear Sesión</h1>
+    <form id="crearSesionForm">
+        <label for="nombreSesion">Nombre de la Sesión:</label>
+        <input type="text" id="nombreSesion" name="nombreSesion" required>
+        <button type="submit">Crear Sesión</button>
+    </form>
+</section>
+
+<script>
+    // Función para obtener la lista de sesiones desde el servidor
+    function loadSesionesList() {
+        fetch('/api/sesiones')
+                .then(response => response.json())
+                .then(data => {
+                    const sesionesList = document.getElementById("sesionesList");
+                    sesionesList.innerHTML = '';
+                    data.forEach(sesion => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<button onclick="joinSesion('${sesion.id}')">${sesion.nombre}</button>`;
+                        sesionesList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error al cargar las sesiones:', error));
+    }
+
+    // Función para unirse a una sesión
+    function joinSesion(sesionId) {
+        fetch('/join', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({sesionId: sesionId})
+        })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    console.log('Unido a la sesión:', data);
+                })
+                .catch(error => console.error('Error al unirse a la sesión:', error));
+    }
+
+    // Función para crear una sesión
+    document.getElementById('crearSesionForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        const nombreSesion = document.getElementById('nombreSesion').value;
+        fetch('/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({nombreSesion: nombreSesion})
+        })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                })
+                .then(data => {
+                    console.log('Sesión creada:', data);
+                })
+                .catch(error => console.error('Error al crear la sesión:', error));
+    });
+
+    // Cargar la lista de sesiones al cargar la página
+    loadSesionesList();
+</script>
+
+</body>
+</html>
