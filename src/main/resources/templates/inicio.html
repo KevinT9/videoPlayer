@@ -6,7 +6,7 @@
     <style>
         body{
             font-family: Arial, sans-serif;
-            background-color: darkgrey;
+            background-color: #3b3b3b;
         }
 
         h1 {
@@ -14,7 +14,7 @@
         }
 
         #SesionesActivas, #CrearSesion {
-            background-color: white;
+            background-color: #8893b9;
             padding: 20px;
             margin: 20px;
             border-radius: 10px;
@@ -101,31 +101,12 @@
                     sesionesList.innerHTML = '';
                     data.forEach(sesion => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<button onclick="joinSesion('${sesion.id}')">${sesion.nombre}</button>`;
+                        // li.innerHTML = `<button onclick="joinSesion('${sesion.id}')">${sesion.nombre}</button>`;
+                        li.innerHTML = `<a href="./sesiones/join/${sesion.sessionId}">${sesion.nombre}</a>`;
                         sesionesList.appendChild(li);
                     });
                 })
                 .catch(error => console.error('Error al cargar las sesiones:', error));
-    }
-
-    // Función para unirse a una sesión
-    function joinSesion(sesionId) {
-        fetch('/join', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({sesionId: sesionId})
-        })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                })
-                .then(data => {
-                    console.log('Unido a la sesión:', data);
-                })
-                .catch(error => console.error('Error al unirse a la sesión:', error));
     }
 
     // Función para crear una sesión

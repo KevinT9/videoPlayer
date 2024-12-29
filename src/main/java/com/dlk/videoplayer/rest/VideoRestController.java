@@ -28,6 +28,7 @@ public class VideoRestController {
     @PostMapping("/play")
     public ResponseEntity<?> playSong(@RequestBody VideoListItem videoListItem) {
         log.info("Recibiendo solicitud para reproducir: {}", videoListItem.filename());
+
         if (videoListItem.filename() == null || videoListItem.filename().trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Error: El nombre de la canción no puede estar vacío");
         }

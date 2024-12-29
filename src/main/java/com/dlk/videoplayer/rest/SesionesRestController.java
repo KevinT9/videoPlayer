@@ -4,9 +4,7 @@ import com.dlk.videoplayer.model.dto.SesionesDTO;
 import com.dlk.videoplayer.websocket.SessionStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,5 +37,13 @@ public class SesionesRestController {
         System.out.println("Sesiones: " + listaSesiones);
 
         return ResponseEntity.ok(listaSesiones);
+    }
+
+    @PostMapping("/join")
+    ResponseEntity<Void> joinSession(@RequestBody SesionesDTO sesionesDTO) {
+        log.info("Unirse a la sesión");
+
+
+        return ResponseEntity.ok().build();
     }
 }

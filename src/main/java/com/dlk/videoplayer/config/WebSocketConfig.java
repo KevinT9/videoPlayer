@@ -22,7 +22,7 @@ public class WebSocketConfig implements WebSocketConfigurer {
     }
 
     /**
-     * Create the WebSocket handler bean
+     * Creando WebSocket handler bean
      */
     @Bean
     public WebSocketHandler myHandler() {

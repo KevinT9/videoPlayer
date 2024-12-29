@@ -33,14 +33,24 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     }
 
     public void sendVideoUrl(String videoUrl) throws Exception {
-        if (sessionStorage.getSessions().isEmpty()) {
-            log.info("No hay sesiones activas.");
-            return;
-        }
+        if (findActiveSession()) return;
 
         for (WebSocketSession session : sessionStorage.getSessions().values()) {
-            log.info("Sesión activa: {}", session.getId());
             if (session.isOpen()) {
+                session.sendMessage(new TextMessage(videoUrl));
+                log.info("Enviando video a la sesión por defecto {}: {}", session.getId(), videoUrl);
+            } else {
+                log.info("La sesión por defecto {} no está abierta.", session.getId());
+            }
+        }
+    }
+
+    // Metodo para enviar un video a una sesión en específico
+    public void sendVideoUrlToSession(String videoUrl, String sessionId) throws Exception {
+        if (findActiveSession()) return;
+
+        for (WebSocketSession session : sessionStorage.getSessions().values()) {
+            if (session.isOpen() && session.getId().equals(sessionId)) {
                 session.sendMessage(new TextMessage(videoUrl));
                 log.info("Enviando video a la sesión {}: {}", session.getId(), videoUrl);
             } else {
@@ -49,6 +59,15 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    private boolean findActiveSession() {
+        if (sessionStorage.getSessions().isEmpty()) {
+            log.info("No hay sesiones activas.");
+            return true;
+        }
+        return false;
+    }
+
+    // Metodo para registrar las sesiones activas
     private void logSessions() {
         log.info("Sesiones actuales:");
         for (String sessionId : sessionStorage.getSessions().keySet()) {
