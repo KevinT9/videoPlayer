@@ -21,7 +21,7 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
     @Override
     public void afterConnectionEstablished(WebSocketSession session) {
         log.info("Conexión establecida: {}", session.getId());
-        sessionStorage.addSession(session.getId(), session);
+//        sessionStorage.addSession(session.getId(), session);
         logSessions();
     }
 

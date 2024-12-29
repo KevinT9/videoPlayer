@@ -10,7 +10,6 @@ import org.springframework.web.socket.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/sesiones")
@@ -38,8 +37,6 @@ public class SesionesRestController {
 
             listaSesiones.add(sesionesDTO);
         }
-
-        System.out.println("Sesiones: " + listaSesiones);
 
         return ResponseEntity.ok(listaSesiones);
     }

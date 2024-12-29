@@ -36,41 +36,58 @@
 <br>
 
 <script>
+    // Variable para almacenar la conexión WebSocket
+    let socket = null;
+
     // Generamos un ID único de sesión en el cliente
-    const sessionId = "session-" + Math.random().toString(36).substr(2, 9); // Genera un ID único simple
-    document.getElementById("sessionId").innerText = sessionId; // Mostramos el ID en el HTML
+    // const sessionId = "session-" + Math.random().toString(36).substr(2, 9); // Genera un ID único simple
+    // document.getElementById("sessionId").innerText = sessionId; // Mostramos el ID en el HTML
 
-    // Conectar al WebSocket
-    const socket = new WebSocket('wss://loves-sharp-hall-bridge.trycloudflare.com/ws/video');
+    let sessionId = document.getElementById("sessionId").innerText;
 
-    // Cuando el WebSocket esté abierto, el cliente está listo para recibir mensajes
-    socket.onopen = function () {
-        console.log('Conectado al WebSocket');
-        // Enviar el ID de sesión al servidor después de que la conexión esté abierta
-        socket.send(JSON.stringify({ type: "registerSession", sessionId: sessionId }));
-    };
+    // Función para crear una nueva conexión WebSocket
+    function connectWebSocket() {
+        // Verificamos si ya hay una conexión abierta
+        if (socket && socket.readyState === WebSocket.OPEN) {
+            console.log("Ya hay una conexión WebSocket abierta.");
+            return; // Si ya está abierta, no creamos una nueva
+        }
 
-    // Función para recibir la URL del video desde el servidor
-    socket.onmessage = function (event) {
-        const videoUrl = event.data;  // La URL del video que el servidor envió
-        console.log('Reproduciendo video desde URL: ', videoUrl);
-        const videoElement = document.getElementById("videoPlayer");
-        const videoSource = document.getElementById("videoSource");
-        videoSource.src = videoUrl;  // Establece la fuente del video
-        videoElement.volume = 0.3;   // Establece el volumen del video al 50%
-        videoElement.load();         // Carga el video
-        videoElement.play();         // Reproduce el video
-    };
+        // Conectar al WebSocket
+        socket = new WebSocket('wss://loves-sharp-hall-bridge.trycloudflare.com/ws/video');
 
-    // Si ocurre algún error en la conexión WebSocket
-    socket.onerror = function (error) {
-        console.error('Error de WebSocket: ', error);
-    };
+        // Cuando el WebSocket esté abierto, el cliente está listo para recibir mensajes
+        socket.onopen = function () {
+            console.log('Conectado al WebSocket');
+            // Enviar el ID de sesión al servidor después de que la conexión esté abierta
+            socket.send(JSON.stringify({ type: "registerSession", sessionId: sessionId }));
+        };
 
-    // Si se cierra la conexión WebSocket
-    socket.onclose = function () {
-        console.log('Conexión WebSocket cerrada');
-    };
+        // Función para recibir la URL del video desde el servidor
+        socket.onmessage = function (event) {
+            const videoUrl = event.data;  // La URL del video que el servidor envió
+            console.log('Reproduciendo video desde URL: ', videoUrl);
+            const videoElement = document.getElementById("videoPlayer");
+            const videoSource = document.getElementById("videoSource");
+            videoSource.src = videoUrl;  // Establece la fuente del video
+            videoElement.volume = 0.3;   // Establece el volumen del video al 50%
+            videoElement.load();         // Carga el video
+            videoElement.play();         // Reproduce el video
+        };
+
+        // Si ocurre algún error en la conexión WebSocket
+        socket.onerror = function (error) {
+            console.error('Error de WebSocket: ', error);
+        };
+
+        // Si se cierra la conexión WebSocket
+        socket.onclose = function () {
+            console.log('Conexión WebSocket cerrada');
+        };
+    }
+
+    // Llamar a la función para crear la conexión WebSocket al cargar la página
+    connectWebSocket();
 </script>
 
 </body>
