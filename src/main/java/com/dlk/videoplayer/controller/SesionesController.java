@@ -25,7 +25,6 @@ public class SesionesController {
         return "playlistVideoSesion";
     }
 
-
     @RequestMapping("/play/{sessionId}")
     String playSession(@PathVariable String sessionId, Model model) {
         SesionesDTO sesionesDTO = new SesionesDTO();
