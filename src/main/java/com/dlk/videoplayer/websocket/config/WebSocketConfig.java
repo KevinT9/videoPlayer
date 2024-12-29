@@ -1,4 +1,4 @@
-package com.dlk.videoplayer.config;
+package com.dlk.videoplayer.websocket.config;
 
 import com.dlk.videoplayer.websocket.SessionStorage;
 import com.dlk.videoplayer.websocket.VideoWebSocketHandler;

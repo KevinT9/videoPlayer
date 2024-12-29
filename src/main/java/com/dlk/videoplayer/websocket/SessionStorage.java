@@ -21,4 +21,9 @@ public class SessionStorage {
         sessions.remove(sessionId);
     }
 
+    // Buscar por la clave del Map y retornar el valor
+    public WebSocketSession getSession(String sessionId) {
+        return sessions.get(sessionId);
+    }
+
 }

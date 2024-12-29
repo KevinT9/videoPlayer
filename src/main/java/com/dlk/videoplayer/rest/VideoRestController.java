@@ -1,6 +1,7 @@
 package com.dlk.videoplayer.rest;
 
 import com.dlk.videoplayer.model.dto.VideoListItem;
+import com.dlk.videoplayer.websocket.SessionStorage;
 import com.dlk.videoplayer.websocket.VideoWebSocketHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
@@ -18,10 +19,12 @@ import static com.dlk.videoplayer.Constantes.VIDEO_DIR;
 public class VideoRestController {
 
     private final VideoWebSocketHandler videoWebSocketHandler;
+    private final SessionStorage sessionStorage;
 //    private final String VIDEO_DIR = "src/main/resources/videos/";
 
-    public VideoRestController(VideoWebSocketHandler videoWebSocketHandler) {
+    public VideoRestController(VideoWebSocketHandler videoWebSocketHandler, SessionStorage sessionStorage) {
         this.videoWebSocketHandler = videoWebSocketHandler;
+        this.sessionStorage = sessionStorage;
     }
 
     // Endpoint para recibir el nombre del video desde Postman
@@ -39,6 +42,37 @@ public class VideoRestController {
         try {
             // Usar WebSocket para enviar la URL del video al frontend
             videoWebSocketHandler.sendVideoUrl(videoUrl);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Error al enviar el video: " + e.getMessage());
+        }
+
+        return ResponseEntity.ok().build();  // Confirma que el video se envió
+    }
+
+    // Endpoint para recibir el nombre del video desde Postman
+    @PostMapping("/play/{sessionId}")
+    public ResponseEntity<?> playSong(@RequestBody VideoListItem videoListItem, @PathVariable String sessionId) {
+        log.info("Recibiendo solicitud para reproducir: {} en la sessionID {}", videoListItem.filename(), sessionId);
+
+        if (videoListItem.filename() == null || videoListItem.filename().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Error: El nombre de la canción no puede estar vacío");
+        }
+
+        // Crear la URL del video
+        String videoUrl = "/videos/" + videoListItem.filename();
+
+        try {
+            for (String nombreSesion : sessionStorage.getSessions().keySet()) {
+                if (nombreSesion.equals(sessionId)) {
+                    String id = sessionStorage.getSession(sessionId).getId();
+                    // Usar WebSocket para enviar la URL del video al frontend
+                    videoWebSocketHandler.sendVideoUrlToSession(videoUrl, id);
+                }
+            }
+
+
+            // Usar WebSocket para enviar la URL del video al frontend
+
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Error al enviar el video: " + e.getMessage());
         }

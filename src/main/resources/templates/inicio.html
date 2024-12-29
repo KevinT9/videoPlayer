@@ -113,12 +113,12 @@
     document.getElementById('crearSesionForm').addEventListener('submit', function (event) {
         event.preventDefault();
         const nombreSesion = document.getElementById('nombreSesion').value;
-        fetch('/create', {
+        fetch('/api/sesiones/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({nombreSesion: nombreSesion})
+            body: JSON.stringify({nombre: nombreSesion})
         })
                 .then(response => {
                     if (!response.ok) {

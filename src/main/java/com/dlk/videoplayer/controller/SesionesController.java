@@ -24,4 +24,14 @@ public class SesionesController {
         model.addAttribute("sesion", sesionesDTO);
         return "playlistVideoSesion";
     }
+
+
+    @RequestMapping("/play/{sessionId}")
+    String playSession(@PathVariable String sessionId, Model model) {
+        SesionesDTO sesionesDTO = new SesionesDTO();
+        sesionesDTO.setSessionId(sessionId);
+        sesionesDTO.setNombre(sessionId);
+        model.addAttribute("sesion", sesionesDTO);
+        return "videoPlayerSesion";
+    }
 }

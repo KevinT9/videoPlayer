@@ -1,6 +1,7 @@
 package com.dlk.videoplayer.websocket;
 
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
@@ -30,6 +31,24 @@ public class VideoWebSocketHandler extends TextWebSocketHandler {
         log.info("Código de cierre: {}", status.getCode());
         log.info("Conexión cerrada: {}", session.getId());
         logSessions();
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        log.info("Mensaje recibido de la sesión {}: {}", session.getId(), message.getPayload());
+        // Recibir el mensaje del cliente
+        String payload = message.getPayload();
+        // Parsear el mensaje
+        JSONObject jsonMessage = new JSONObject(payload);
+
+        if (jsonMessage.getString("type").equals("registerSession")) {
+            // Obtener el sessionId y registrarlo
+            String sessionId = jsonMessage.getString("sessionId");
+            sessionStorage.addSession(sessionId, session);  // Almacenar la sesión con el sessionId
+
+            log.info("Sesión registrada con ID: {}", sessionId);
+        }
+        // Manejar otros tipos de mensaje...
     }
 
     public void sendVideoUrl(String videoUrl) throws Exception {
