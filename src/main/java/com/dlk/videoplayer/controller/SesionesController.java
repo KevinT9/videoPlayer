@@ -1,5 +1,6 @@
 package com.dlk.videoplayer.controller;
 
+import com.dlk.videoplayer.model.dto.MensajeDTO;
 import com.dlk.videoplayer.model.dto.SesionesDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,19 +19,27 @@ public class SesionesController {
 
     @RequestMapping("/lista/{sessionId}")
     String obtenerListaSesiones(@PathVariable String sessionId, Model model) {
-        SesionesDTO sesionesDTO = new SesionesDTO();
-        sesionesDTO.setSessionId(sessionId);
-        sesionesDTO.setNombre(sessionId);
-        model.addAttribute("sesion", sesionesDTO);
-        return "playlistVideoSesion";
+        MensajeDTO mensajeDTO = new MensajeDTO();
+        mensajeDTO.setSessionId(sessionId);
+        model.addAttribute("sesion", mensajeDTO);
+        return "playlistVideoMessage";
     }
 
-    @RequestMapping("/play/{sessionId}")
-    String playSession(@PathVariable String sessionId, Model model) {
+    @RequestMapping("/play/{username}/{sessionId}")
+    String playSession(@PathVariable String username, @PathVariable String sessionId, Model model) {
         SesionesDTO sesionesDTO = new SesionesDTO();
         sesionesDTO.setSessionId(sessionId);
-        sesionesDTO.setNombre(sessionId);
+        sesionesDTO.setNombre(username);
         model.addAttribute("sesion", sesionesDTO);
-        return "videoPlayerSesion";
+        return "videoMessage";
+    }
+
+    @RequestMapping("/play/visitante/{sessionId}")
+    String playSessionV(@PathVariable String sessionId, Model model) {
+        SesionesDTO sesionesDTO = new SesionesDTO();
+        sesionesDTO.setSessionId(sessionId);
+        sesionesDTO.setNombre("");
+        model.addAttribute("sesion", sesionesDTO);
+        return "videoMessage";
     }
 }

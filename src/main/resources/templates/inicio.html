@@ -20,7 +20,7 @@
             border-radius: 10px;
         }
 
-        #sesionesList {
+        #sesionesList, #listaSesionesVisitante {
             list-style-type: none;
             padding: 0;
         }
@@ -77,7 +77,13 @@
 
 <section id="SesionesActivas">
     <h1>Sesiones Activas</h1>
+    <p>Selecciona una sesión para unirte como admin:</p>
     <ul id="sesionesList">
+        <!-- Las sesiones se cargarán aquí dinámicamente -->
+    </ul>
+
+    <p>Unirse como visitante</p>
+    <ul id="listaSesionesVisitante">
         <!-- Las sesiones se cargarán aquí dinámicamente -->
     </ul>
 </section>
@@ -87,6 +93,8 @@
     <form id="crearSesionForm">
         <label for="nombreSesion">Nombre de la Sesión:</label>
         <input type="text" id="nombreSesion" name="nombreSesion" required>
+        <label for="nombreUsuario">Nombre de Usuario:</label>
+        <input type="text" id="nombreUsuario" name="nombreUsuario" required>
         <button type="submit">Crear Sesión</button>
     </form>
 </section>
@@ -101,8 +109,16 @@
                     sesionesList.innerHTML = '';
                     data.forEach(sesion => {
                         const li = document.createElement('li');
-                        li.innerHTML = `<a href="./sesiones/lista/${sesion.sessionId}">${sesion.nombre}</a>`;
+                        li.innerHTML = `<a href="./sesiones/lista/${sesion.sessionId}">${sesion.sessionId}</a>`;
                         sesionesList.appendChild(li);
+                    });
+
+                    const listaSesionesVisitante = document.getElementById("listaSesionesVisitante");
+                    listaSesionesVisitante.innerHTML = '';
+                    data.forEach(sesion => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="./sesiones/play/visitante/${sesion.sessionId}">${sesion.sessionId}</a>`;
+                        listaSesionesVisitante.appendChild(li);
                     });
                 })
                 .catch(error => console.error('Error al cargar las sesiones:', error));
@@ -112,8 +128,9 @@
     document.getElementById('crearSesionForm').addEventListener('submit', function (event) {
         event.preventDefault();
         const nombreSesion = document.getElementById('nombreSesion').value;
+        const nombreUsuario = document.getElementById('nombreUsuario').value;
 
-        window.location.href = '/sesiones/play/' + nombreSesion;
+        window.location.href = '/sesiones/play/' + nombreUsuario + '/' + nombreSesion;
 
     });
 

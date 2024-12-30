@@ -1,37 +1,33 @@
 package com.dlk.videoplayer.websocket.config;
 
+import com.dlk.videoplayer.Constantes;
 import com.dlk.videoplayer.websocket.SessionStorage;
-import com.dlk.videoplayer.websocket.handler.VideoWebSocketHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.WebSocketHandler;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    /**
-     * Registrando WebSocket handler
-     */
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(myHandler(), "/ws/video").setAllowedOrigins("*");
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // Configura un broker en memoria para gestionar mensajes a través de canales
+        registry.enableSimpleBroker("/topic", "/queue"); // Esto gestiona los mensajes a los canales
+        registry.setApplicationDestinationPrefixes("/app"); // Prefijo para los mensajes que envían los clientes
     }
 
-    /**
-     * Creando WebSocket handler bean
-     */
-    @Bean
-    public WebSocketHandler myHandler() {
-        return new VideoWebSocketHandler(sessionStorage());
+    @Override
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // Configura el endpoint WebSocket
+        registry.addEndpoint("/ws/video")
+                .setAllowedOrigins(Constantes.URL_DEVELOPMENT, Constantes.URL_PRODUCTION)
+                .withSockJS(); // Habilita SockJS para clientes sin WebSocket nativo
     }
 
-    /**
-     * Creando el almacenamiento de sesiones bean
-     */
     @Bean
     public SessionStorage sessionStorage() {
         return new SessionStorage();

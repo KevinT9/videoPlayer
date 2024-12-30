@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reproductor de Video</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+</head>
+<body>
+
+<h1>Reproductor de Video</h1>
+<p>Sesión actual: <span id="sessionId" th:text="${sesion.getSessionId()}"></span></p>
+<p>Usuario: <span id="username" th:text="${sesion.getNombre()}"></span></p>
+
+<section id="videoPlayerContainer">
+    <video id="videoPlayer" width="800" controls>
+        <source id="videoSource" type="video/mp4">
+        Tu navegador no soporta el formato de video.
+    </video>
+</section>
+
+<section id="chatContainer">
+    <h2>Chat</h2>
+    <ul id="chatMessages"></ul>
+    <input type="text" id="chatInput" placeholder="Escribe un mensaje...">
+    <button onclick="sendMessage()">Enviar</button>
+</section>
+
+<script>
+
+    let url = window.location.href;
+    let urlSplit = url.split("/");
+    let urlBase = urlSplit[2];
+    console.log("urlBase: ", urlBase);
+
+    let socket = null;
+    let stompClient = null;
+
+    // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
+    function connectToWebSocket(sessionId, username) {
+        // Usamos SockJS para la conexión WebSocket
+        socket = new SockJS('https://' + urlBase + '/ws/video');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Conectado a WebSocket: ' + frame);
+
+            // Registramos al cliente en la sesión usando el sessionId
+            stompClient.send("/app/connect", {}, JSON.stringify({
+                type: "registerSession",
+                sessionId: sessionId,
+                username: username,
+                message: username + " se ha unido a la sesión."
+            }));
+
+            // Nos suscribimos al canal del sessionId para recibir mensajes
+            stompClient.subscribe('/topic/' + sessionId, function (message) {
+                console.log("Mensaje recibido: " + message.body);
+
+                // Parseamos el mensaje JSON
+                message = JSON.parse(message.body);
+
+                if (message.type === "addUser") {
+                    // Si el mensaje es de tipo "addUser", mostramos el mensaje en el chat
+                    const chatMessages = document.getElementById('chatMessages');
+                    const li = document.createElement('li');
+                    li.innerText = "Se unió el usuario: " + message.username;
+                    chatMessages.appendChild(li);
+                } else if (message.type === "chatMessage") {
+                    // Si el mensaje es de tipo "chatMessage", mostramos el mensaje en el chat
+                    const chatMessages = document.getElementById('chatMessages');
+                    const li = document.createElement('li');
+                    li.innerText = message.username + ": " + message.message;
+                    chatMessages.appendChild(li);
+                } else if (message.type === "videoLoad") {
+                    // Si el mensaje es de tipo "playVideo", cargamos el video en el reproductor
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    const videoSource = document.getElementById('videoSource');
+                    videoSource.src = message.video.videoUrl;
+                    videoPlayer.currentTime = message.video.currentTime;
+                    videoPlayer.volume = 0.3;
+                    videoPlayer.load();
+                    videoPlayer.play();
+                } else if (message.type === "videoPause") {
+                    // Si el mensaje es de tipo "videoPause", pausamos el video
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    videoPlayer.currentTime = message.video.currentTime;
+                    videoPlayer.pause();
+                } else if (message.type === "videoPlay") {
+                    // Si el mensaje es de tipo "videoPlay", reproducimos el video
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    videoPlayer.currentTime = message.video.currentTime;
+                    videoPlayer.play();
+                } else if (message.type === "videoState") {
+                    // Si el mensaje es de tipo "videoState", sincronizamos el video
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    const videoSource = document.getElementById('videoSource');
+                    videoSource.src = message.videoUrl;
+                    videoPlayer.currentTime = message.video.currentTime;
+                    if (message.video.isPlaying) {
+                        videoPlayer.play();
+                    } else {
+                        videoPlayer.pause();
+                    }
+                }
+
+            });
+        });
+    }
+
+    // Función para registrar el sessionId (lo recibes al primer cliente o al servidor)
+    function registerSession() {
+        let sessionId = document.getElementById('sessionId').innerText;
+        let username = document.getElementById('username').innerText;
+
+        if (username === "") {
+            username = prompt("Ingresa tu nombre de usuario: ");
+            document.getElementById('username').innerText = username;
+        }
+
+        connectToWebSocket(sessionId, username);
+    }
+
+    function sendMessage() {
+        const message = document.getElementById('chatInput').value;
+        let sessionId = document.getElementById('sessionId').innerText;
+
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: "chatMessage",
+            sessionId: sessionId,
+            username: document.getElementById('username').innerText,
+            message: message
+        }));
+    }
+
+    // Función para enviar la información del video (posición y estado) al servidor
+    function sendVideoState(action) {
+        let sessionId = document.getElementById('sessionId').innerText;
+        const videoElementSource = document.getElementById("videoSource");
+        let videoUrl = videoElementSource.src;
+        videoUrl = videoUrl.replace("https://" + urlBase, "");
+        console.log("videoUrl: ", videoUrl);
+
+        const videoElement = document.getElementById("videoPlayer");
+        const currentTime = videoElement.currentTime; // Obtener la posición actual del video
+        const isPlaying = !videoElement.paused; // Verificar si el video está en reproducción
+
+        if (action === "videoState") {
+            stompClient.send("/app/connect", {}, JSON.stringify({
+                type: "videoState",
+                sessionId: sessionId,
+                message: "Enviando estado del video",
+                username: document.getElementById('username').innerText,
+                video: {
+                    videoUrl: videoUrl,
+                    currentTime: currentTime,
+                    isPlaying: isPlaying
+                }
+            }));
+        } else if (action === "videoPause") {
+            stompClient.send("/app/connect", {}, JSON.stringify({
+                type: "videoPause",
+                sessionId: sessionId,
+                message: "Pausando",
+                video: {
+                    videoUrl: videoUrl,
+                    currentTime: currentTime,
+                    isPlaying: isPlaying
+                }
+            }));
+        } else if (action === "videoPlay") {
+            stompClient.send("/app/connect", {}, JSON.stringify({
+                type: "videoPlay",
+                sessionId: sessionId,
+                message: "Reproduciendo",
+                video: {
+                    videoUrl: videoUrl,
+                    currentTime: currentTime,
+                    isPlaying: isPlaying
+                }
+            }));
+        }
+    }
+
+    // Llamamos a la función cuando cargue la página
+    registerSession();
+    let isUserInteracting = false;
+
+    // Detecta la interacción con la barra de progreso (el clic en ella)
+    document.getElementById("videoPlayer").addEventListener("seeking", () => {
+        isUserInteracting = true;
+    });
+
+    document.getElementById("videoPlayer").addEventListener("seeked", () => {
+        isUserInteracting = false;
+    });
+
+    document.getElementById("videoPlayer").addEventListener("play", () => {
+        if (!isUserInteracting) {
+            sendVideoState("videoPlay");
+        }
+    });
+
+    document.getElementById("videoPlayer").addEventListener("pause", () => {
+        if (!isUserInteracting) {
+            sendVideoState("videoPause");
+        }
+    });
+</script>
+
+</body>
+</html>

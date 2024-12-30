@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playlist Video</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: darkgrey;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Playlist Video</h1>
+
+<p>Sesión actual: <span id="sessionId" th:text="${sesion.getSessionId()}"></span></p>
+<p>Usuario: <span id="username"></span></p>
+
+<br>
+
+<!-- Lista de videos -->
+<h3>Selecciona un video:</h3>
+<ul id="videoList">
+    <!-- Los videos se cargarán aquí dinámicamente -->
+</ul>
+
+<script>
+    // Función para obtener la lista de videos desde el servidor
+    function loadVideoList() {
+        fetch('/api/videos')
+            .then(response => response.json())
+            .then(data => {
+                const videoList = document.getElementById("videoList");
+                data.forEach(video => {
+                    const li = document.createElement('li');
+
+                    // Buscar ' y reemplazar por /u0027
+                    let videoId = encodeURIComponent(video);
+                    videoId = videoId.replace(/'/g, '%27');
+
+                    li.innerHTML = `<button href="#" onclick="loadVideo('${videoId}')">${video}</button>`;
+                    videoList.appendChild(li);
+                });
+            })
+            .catch(error => console.error('Error al cargar los videos:', error));
+    }
+
+
+
+    let socket = null;
+    let stompClient = null;
+
+    // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
+    function connectToWebSocket(sessionId, username) {
+        // Usamos SockJS para la conexión WebSocket
+        socket = new SockJS('https://sharp-classification-dried-awesome.trycloudflare.com/ws/video');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function (frame) {
+            console.log('Conectado a WebSocket: ' + frame);
+
+            // Registramos al cliente en la sesión usando el sessionId
+            stompClient.send("/app/connect", {}, JSON.stringify({
+                type: "addUser",
+                sessionId: sessionId,
+                username: username,
+                message: username + " se ha unido a la sesión."
+            }));
+
+        })
+
+        // Nos suscribimos al canal del sessionId para recibir mensajes
+        stompClient.subscribe('/topic/' + sessionId, function(message) {
+            console.log("Mensaje recibido: " + message.body);
+        });
+    }
+
+    function registerUser() {
+        const username = prompt("Ingresa tu nombre de usuario: ");
+        document.getElementById('username').innerText = username;
+        const sessionId = document.getElementById('sessionId').innerText;
+        connectToWebSocket(sessionId, username);
+    }
+
+    // Función para cargar un video
+    function loadVideo(filename) {
+        // stompClient.send("/app/connect", {}, message);
+        let sessionId = document.getElementById('sessionId').innerText;
+
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: "videoLoad",
+            sessionId: sessionId,
+            username: document.getElementById('username').innerText,
+            message: "Cargando video: " + filename,
+            video: {
+                videoUrl: "/videos/" + filename,
+                currentTime: 0,
+                isPlaying: false
+            }
+        }));
+    }
+
+
+
+    // Cargar la lista de videos cuando se carga la página
+    loadVideoList();
+    registerUser();
+</script>
+
+</body>
+</html>
