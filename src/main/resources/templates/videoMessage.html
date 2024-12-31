@@ -14,6 +14,8 @@
 <p>Usuario: <span id="username" th:text="${sesion.getNombre()}"></span></p>
 
 <section id="videoPlayerContainer">
+<!--    Titulo del video-->
+    <h2 id="nombreVideo">Video</h2>
     <video id="videoPlayer" width="800" controls>
         <source id="videoSource" type="video/mp4">
         Tu navegador no soporta el formato de video.
@@ -74,6 +76,10 @@
                     li.innerText = message.username + ": " + message.message;
                     chatMessages.appendChild(li);
                 } else if (message.type === "videoLoad") {
+
+                    let nombreVideo = document.getElementById('nombreVideo');
+                    nombreVideo.innerText = message.video.nameVideo;
+
                     // Si el mensaje es de tipo "playVideo", cargamos el video en el reproductor
                     const videoPlayer = document.getElementById('videoPlayer');
                     const videoSource = document.getElementById('videoSource');

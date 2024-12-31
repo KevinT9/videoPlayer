@@ -58,7 +58,7 @@
     // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
     function connectToWebSocket(sessionId, username) {
         // Usamos SockJS para la conexión WebSocket
-        socket = new SockJS('https://sharp-classification-dried-awesome.trycloudflare.com/ws/video');
+        socket = new SockJS('https://copper-fitted-thai-funny.trycloudflare.com/ws/video');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function (frame) {
@@ -91,6 +91,7 @@
     function loadVideo(filename) {
         // stompClient.send("/app/connect", {}, message);
         let sessionId = document.getElementById('sessionId').innerText;
+        let nameVideoDecode = decodeURIComponent(filename);
 
         stompClient.send("/app/connect", {}, JSON.stringify({
             type: "videoLoad",
@@ -100,7 +101,8 @@
             video: {
                 videoUrl: "/videos/" + filename,
                 currentTime: 0,
-                isPlaying: false
+                isPlaying: false,
+                nameVideo: nameVideoDecode
             }
         }));
     }

@@ -12,9 +12,6 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.Objects;
 
@@ -76,19 +73,6 @@ public class VideoController {
         // Reenvía el mensaje a todos los clientes en el canal de esa sesión
         log.info("Mensaje enviado a la sesión {}: {}", sessionId, message);
         return ResponseEntity.ok(message);
-    }
-
-    @GetMapping("/video")
-    String video() {
-        return "videoMessage";
-    }
-
-    @GetMapping("/list/{sessionId}")
-    String video(@PathVariable String sessionId, Model model) {
-        MensajeDTO mensajeDTO = new MensajeDTO();
-        mensajeDTO.setSessionId(sessionId);
-        model.addAttribute("sesion", mensajeDTO);
-        return "playlistVideoMessage";
     }
 
 }
