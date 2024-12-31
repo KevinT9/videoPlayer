@@ -31,6 +31,7 @@ public class SesionesController {
         sesionesDTO.setSessionId(sessionId);
         sesionesDTO.setNombre(username);
         model.addAttribute("sesion", sesionesDTO);
+        model.addAttribute("visitante", false);
         return "videoMessage";
     }
 
@@ -40,6 +41,7 @@ public class SesionesController {
         sesionesDTO.setSessionId(sessionId);
         sesionesDTO.setNombre("");
         model.addAttribute("sesion", sesionesDTO);
+        model.addAttribute("visitante", true);
         return "videoMessage";
     }
 }

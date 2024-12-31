@@ -45,6 +45,11 @@ public class VideoController {
 
                 messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
             }
+            case "addUser" -> {
+                log.info("Añadiendo el usuario {} a la sesión: {}", mensajeDTO.getUsername(), mensajeDTO.getSessionId());
+
+                messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
+            }
             case "videoPlay" -> {
                 log.info("Reproduciendo video: {}", mensajeDTO.getSessionId());
 

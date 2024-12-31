@@ -10,13 +10,14 @@
 <body>
 
 <h1>Reproductor de Video</h1>
+<span id="visitante" th:text="${visitante}" style="display: none"></span>
 <p>Sesión actual: <span id="sessionId" th:text="${sesion.getSessionId()}"></span></p>
 <p>Usuario: <span id="username" th:text="${sesion.getNombre()}"></span></p>
 
 <section id="videoPlayerContainer">
 <!--    Titulo del video-->
     <h2 id="nombreVideo">Esperando el video...</h2>
-    <video id="videoPlayer" width="800" controls>
+    <video id="videoPlayer" width="1080" controls>
         <source id="videoSource" type="video/mp4">
         Tu navegador no soporta el formato de video.
     </video>
@@ -35,280 +36,206 @@
 
 <script>
 
-    let url = window.location.href;
-    let urlSplit = url.split("/");
-    let urlBase = urlSplit[2];
-    console.log("urlBase: ", urlBase);
+    const url = new URL(window.location.href);
+    const urlBase = url.host;
+    console.log("urlBase:", urlBase);
 
     let socket = null;
     let stompClient = null;
+    let isUserInteracting = false;
 
-    // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
+    /**
+     * Conecta al WebSocket y se suscribe al canal usando el sessionId.
+     */
     function connectToWebSocket(sessionId, username) {
+        const nombreVideo = document.getElementById('nombreVideo');
 
-        let nombreVideo = document.getElementById('nombreVideo');
-
-        // Usamos SockJS para la conexión WebSocket
-        socket = new SockJS('https://' + urlBase + '/ws/video');
+        socket = new SockJS(`https://${urlBase}/ws/video`);
         stompClient = Stomp.over(socket);
 
-        stompClient.connect({}, function (frame) {
-            console.log('Conectado a WebSocket: ' + frame);
+        stompClient.connect({}, (frame) => {
+            console.log('Conectado a WebSocket:', frame);
 
-            // Registramos al cliente en la sesión usando el sessionId
+            let visitante = document.getElementById('visitante').innerText;
+            let type = visitante === "false" ? "registerSession" : "addUser";
+
+            // Registrar sesión en el servidor
             stompClient.send("/app/connect", {}, JSON.stringify({
-                type: "registerSession",
-                sessionId: sessionId,
-                username: username,
-                message: username + " se ha unido a la sesión."
+                type,
+                sessionId,
+                username,
+                message: `${username} se ha unido a la sesión.`
             }));
 
-            // Nos suscribimos al canal del sessionId para recibir mensajes
-            stompClient.subscribe('/topic/' + sessionId, function (message) {
-                console.log("Mensaje recibido: " + message.body);
-
-                // Parseamos el mensaje JSON
-                message = JSON.parse(message.body);
-
-                if (message.type === "addUser") {
-                    // Si el mensaje es de tipo "addUser", mostramos el mensaje en el chat
-                    const chatMessages = document.getElementById('chatMessages');
-                    const li = document.createElement('li');
-                    li.innerText = "Se unió el usuario: " + message.username;
-                    chatMessages.appendChild(li);
-                } else if (message.type === "chatMessage") {
-                    // Si el mensaje es de tipo "chatMessage", mostramos el mensaje en el chat
-                    const chatMessages = document.getElementById('chatMessages');
-                    const li = document.createElement('li');
-                    li.innerText = message.username + ": " + message.message;
-                    chatMessages.appendChild(li);
-                } else if (message.type === "videoLoad") {
-                    nombreVideo.innerText = message.video.nameVideo;
-
-                    // Si el mensaje es de tipo "playVideo", cargamos el video en el reproductor
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    const videoSource = document.getElementById('videoSource');
-                    videoSource.src = message.video.videoUrl;
-                    videoPlayer.currentTime = message.video.currentTime;
-                    videoPlayer.volume = 0.3;
-                    videoPlayer.load();
-                    videoPlayer.play();
-
-                    // Añadir el onclick para cargar el video anterior
-                    document.getElementById("btnAnterior").onclick = function() {
-                        cargarVideoAnterior(message.video.nameVideo);
-                    };
-
-                    // Añadir el onclick para cargar el video siguiente
-                    document.getElementById("btnSiguiente").onclick = function() {
-                        cargarVideoSiguiente(message.video.nameVideo);
-                    };
-
-                } else if (message.type === "videoPause") {
-                    // Si el mensaje es de tipo "videoPause", pausamos el video
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    videoPlayer.currentTime = message.video.currentTime;
-                    videoPlayer.pause();
-                } else if (message.type === "videoPlay") {
-                    // Si el mensaje es de tipo "videoPlay", reproducimos el video
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    videoPlayer.currentTime = message.video.currentTime;
-                    videoPlayer.play();
-                } else if (message.type === "videoState") {
-                    // Si el mensaje es de tipo "videoState", sincronizamos el video
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    const videoSource = document.getElementById('videoSource');
-                    videoSource.src = message.videoUrl;
-                    videoPlayer.currentTime = message.video.currentTime;
-                    if (message.video.isPlaying) {
-                        videoPlayer.play();
-                    } else {
-                        videoPlayer.pause();
-                    }
-                } else if (message.type === "previousVideo") {
-                    nombreVideo.innerText = message.video.nameVideo;
-
-                    // Si el mensaje es de tipo "previousVideo", cargamos el video anterior
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    const videoSource = document.getElementById('videoSource');
-                    videoSource.src = message.video.videoUrl;
-                    videoPlayer.currentTime = message.video.currentTime;
-                    videoPlayer.load();
-                    videoPlayer.play();
-
-                    // Añadir el onclick para cargar el video anterior
-                    document.getElementById("btnAnterior").onclick = function() {
-                        cargarVideoAnterior(message.video.nameVideo);
-                    };
-
-                    // Añadir el onclick para cargar el video siguiente
-                    document.getElementById("btnSiguiente").onclick = function() {
-                        cargarVideoSiguiente(message.video.nameVideo);
-                    };
-                } else if (message.type === "nextVideo") {
-                    nombreVideo.innerText = message.video.nameVideo;
-
-                    // Si el mensaje es de tipo "nextVideo", cargamos el video siguiente
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    const videoSource = document.getElementById('videoSource');
-                    videoSource.src = message.video.videoUrl;
-                    videoPlayer.currentTime = message.video.currentTime;
-                    videoPlayer.load();
-                    videoPlayer.play();
-
-                    // Añadir el onclick para cargar el video anterior
-                    document.getElementById("btnAnterior").onclick = function() {
-                        cargarVideoAnterior(message.video.nameVideo);
-                    };
-
-                    // Añadir el onclick para cargar el video siguiente
-                    document.getElementById("btnSiguiente").onclick = function() {
-                        cargarVideoSiguiente(message.video.nameVideo);
-                    };
-                }
-
+            // Suscripción al canal
+            stompClient.subscribe(`/topic/${sessionId}`, (message) => {
+                handleIncomingMessage(JSON.parse(message.body));
             });
         });
+
+        /** Maneja mensajes entrantes del WebSocket */
+        function handleIncomingMessage(message) {
+
+
+            switch (message.type) {
+                case "addUser":
+                case "chatMessage":
+                    appendChatMessage(message);
+                    break;
+
+                case "videoLoad":
+                case "previousVideo":
+                case "nextVideo":
+                    loadVideo(message);
+                    break;
+
+                case "videoPause":
+                    controlVideoPlayback(false, message.video.currentTime);
+                    break;
+
+                case "videoPlay":
+                    controlVideoPlayback(true, message.video.currentTime);
+                    break;
+
+                case "videoState":
+                    syncVideoState(message);
+                    break;
+            }
+        }
+
+        function appendChatMessage(message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const li = document.createElement('li');
+            li.innerText = message.type === "addUser"
+                ? `Se unió el usuario: ${message.username}`
+                : `${message.username}: ${message.message}`;
+            chatMessages.appendChild(li);
+        }
+
+        function loadVideo(message) {
+            nombreVideo.innerText = message.video.nameVideo;
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoSource = document.getElementById('videoSource');
+
+            videoSource.src = message.video.videoUrl;
+            videoPlayer.currentTime = message.video.currentTime;
+            videoPlayer.volume = 0.3;
+            videoPlayer.load();
+            videoPlayer.play();
+
+            setNavigationButtons(message.video.nameVideo);
+        }
+
+        function setNavigationButtons(currentVideo) {
+            document.getElementById("btnAnterior").onclick = () => cargarVideo("previousVideo", currentVideo);
+            document.getElementById("btnSiguiente").onclick = () => cargarVideo("nextVideo", currentVideo);
+        }
+
+        function controlVideoPlayback(isPlaying, currentTime) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            videoPlayer.currentTime = currentTime;
+            isPlaying ? videoPlayer.play() : videoPlayer.pause();
+        }
+
+        function syncVideoState(message) {
+            const videoPlayer = document.getElementById('videoPlayer');
+            const videoSource = document.getElementById('videoSource');
+
+            videoSource.src = message.video.videoUrl;
+            videoPlayer.currentTime = message.video.currentTime;
+
+            message.video.isPlaying ? videoPlayer.play() : videoPlayer.pause();
+        }
     }
 
-    // Función para registrar el sessionId (lo recibes al primer cliente o al servidor)
+    /**
+     * Inicia la sesión del usuario y conecta al WebSocket.
+     */
     function registerSession() {
-        let sessionId = document.getElementById('sessionId').innerText;
+        const sessionId = document.getElementById('sessionId').innerText;
         let username = document.getElementById('username').innerText;
 
-        if (username === "") {
-            username = prompt("Ingresa tu nombre de usuario: ");
+        if (!username) {
+            username = prompt("Ingresa tu nombre de usuario:");
             document.getElementById('username').innerText = username;
         }
 
         connectToWebSocket(sessionId, username);
     }
 
+    /**
+     * Enviar mensaje al servidor.
+     */
     function sendMessage() {
         const message = document.getElementById('chatInput').value;
-        let sessionId = document.getElementById('sessionId').innerText;
+        const sessionId = document.getElementById('sessionId').innerText;
 
         stompClient.send("/app/connect", {}, JSON.stringify({
             type: "chatMessage",
-            sessionId: sessionId,
+            sessionId,
             username: document.getElementById('username').innerText,
-            message: message
+            message
         }));
     }
 
-    // Función para enviar la información del video (posición y estado) al servidor
+    /**
+     * Enviar estado del video al servidor.
+     */
     function sendVideoState(action) {
-        let sessionId = document.getElementById('sessionId').innerText;
-        const videoElementSource = document.getElementById("videoSource");
-        let videoUrl = videoElementSource.src;
-        videoUrl = videoUrl.replace("https://" + urlBase, "");
-        console.log("videoUrl: ", videoUrl);
-
+        const sessionId = document.getElementById('sessionId').innerText;
         const videoElement = document.getElementById("videoPlayer");
-        const currentTime = videoElement.currentTime; // Obtener la posición actual del video
-        const isPlaying = !videoElement.paused; // Verificar si el video está en reproducción
+        const videoUrl = document.getElementById("videoSource").src.replace(`https://${urlBase}`, "");
 
-        if (action === "videoState") {
-            stompClient.send("/app/connect", {}, JSON.stringify({
-                type: "videoState",
-                sessionId: sessionId,
-                message: "Enviando estado del video",
-                username: document.getElementById('username').innerText,
-                video: {
-                    videoUrl: videoUrl,
-                    currentTime: currentTime,
-                    isPlaying: isPlaying
-                }
-            }));
-        } else if (action === "videoPause") {
-            stompClient.send("/app/connect", {}, JSON.stringify({
-                type: "videoPause",
-                sessionId: sessionId,
-                message: "Pausando",
-                video: {
-                    videoUrl: videoUrl,
-                    currentTime: currentTime,
-                    isPlaying: isPlaying
-                }
-            }));
-        } else if (action === "videoPlay") {
-            stompClient.send("/app/connect", {}, JSON.stringify({
-                type: "videoPlay",
-                sessionId: sessionId,
-                message: "Reproduciendo",
-                video: {
-                    videoUrl: videoUrl,
-                    currentTime: currentTime,
-                    isPlaying: isPlaying
-                }
-            }));
-        }
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: action,
+            sessionId,
+            username: document.getElementById('username').innerText,
+            video: {
+                videoUrl,
+                currentTime: videoElement.currentTime,
+                isPlaying: !videoElement.paused
+            }
+        }));
     }
 
-    // Llamamos a la función cuando cargue la página
+    /**
+     * Cargar un video (anterior o siguiente).
+     */
+    function cargarVideo(action, filename) {
+        const sessionId = document.getElementById('sessionId').innerText;
+
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: action,
+            sessionId,
+            username: document.getElementById('username').innerText,
+            video: {
+                videoUrl: `/videos/${filename}`,
+                currentTime: 0,
+                isPlaying: false,
+                nameVideo: filename
+            }
+        }));
+    }
+
+    // Event Listeners
     registerSession();
-    let isUserInteracting = false;
 
-    // Detecta la interacción con la barra de progreso (el clic en ella)
-    document.getElementById("videoPlayer").addEventListener("seeking", () => {
-        isUserInteracting = true;
+    const videoPlayer = document.getElementById("videoPlayer");
+
+    videoPlayer.addEventListener("seeking", () => isUserInteracting = true);
+    videoPlayer.addEventListener("seeked", () => isUserInteracting = false);
+
+    videoPlayer.addEventListener("play", () => {
+        if (!isUserInteracting) sendVideoState("videoPlay");
     });
 
-    document.getElementById("videoPlayer").addEventListener("seeked", () => {
-        isUserInteracting = false;
+    videoPlayer.addEventListener("pause", () => {
+        if (!isUserInteracting) sendVideoState("videoPause");
     });
 
-    document.getElementById("videoPlayer").addEventListener("play", () => {
-        if (!isUserInteracting) {
-            sendVideoState("videoPlay");
-        }
-    });
-
-    document.getElementById("videoPlayer").addEventListener("pause", () => {
-        if (!isUserInteracting) {
-            sendVideoState("videoPause");
-        }
-    });
-
-
-    // Función para cargar el video anterior
-    function cargarVideoAnterior(filename) {
-        let sessionId = document.getElementById('sessionId').innerText;
-        stompClient.send("/app/connect", {}, JSON.stringify({
-            type: "previousVideo",
-            sessionId: sessionId,
-            username: document.getElementById('username').innerText,
-            message: "Cargando video anterior",
-            video: {
-                videoUrl: "/videos/" + filename,
-                currentTime: 0,
-                isPlaying: false,
-                nameVideo: filename
-            }
-        }));
-    }
-
-    // Función para cargar el video siguiente
-    function cargarVideoSiguiente(filename) {
-        let sessionId = document.getElementById('sessionId').innerText;
-        stompClient.send("/app/connect", {}, JSON.stringify({
-            type: "nextVideo",
-            sessionId: sessionId,
-            username: document.getElementById('username').innerText,
-            message: "Cargando video siguiente",
-            video: {
-                videoUrl: "/videos/" + filename,
-                currentTime: 0,
-                isPlaying: false,
-                nameVideo: filename
-            }
-        }));
-    }
-
-    // Reproducir el siguiente video cuando se termina el actual
-    document.getElementById("videoPlayer").addEventListener("ended", () => {
-        let nombreVideo = document.getElementById('nombreVideo').innerText;
-        cargarVideoSiguiente(nombreVideo);
+    videoPlayer.addEventListener("ended", () => {
+        const nombreVideo = document.getElementById('nombreVideo').innerText;
+        cargarVideo("nextVideo", nombreVideo);
     });
 
 
