@@ -30,6 +30,12 @@
 </ul>
 
 <script>
+
+    let url = window.location.href;
+    let urlSplit = url.split("/");
+    let urlBase = urlSplit[2];
+    console.log("urlBase: ", urlBase);
+
     // Función para obtener la lista de videos desde el servidor
     function loadVideoList() {
         fetch('/api/videos')
@@ -58,7 +64,7 @@
     // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
     function connectToWebSocket(sessionId, username) {
         // Usamos SockJS para la conexión WebSocket
-        socket = new SockJS('https://copper-fitted-thai-funny.trycloudflare.com/ws/video');
+        socket = new SockJS('https://' + urlBase + '/ws/video');
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function (frame) {
@@ -87,8 +93,37 @@
         connectToWebSocket(sessionId, username);
     }
 
+    function cargarVideoAnterior(filename) {
+        let videoList = document.getElementById("videoList");
+        let videos = videoList.getElementsByTagName("li");
+        let videoAnterior = null;
+        for (let i = 0; i < videos.length; i++) {
+            if (videos[i].innerText === filename) {
+                if (i > 0) {
+                    videoAnterior = videos[i - 1].innerText;
+                }
+            }
+        }
+        return videoAnterior;
+    }
+
+    function cargarVideoSiguiente(filename) {
+        let videoList = document.getElementById("videoList");
+        let videos = videoList.getElementsByTagName("li");
+        let videoSiguiente = null;
+        for (let i = 0; i < videos.length; i++) {
+            if (videos[i].innerText === filename) {
+                if (i < videos.length - 1) {
+                    videoSiguiente = videos[i + 1].innerText;
+                }
+            }
+        }
+        return videoSiguiente;
+    }
+
     // Función para cargar un video
     function loadVideo(filename) {
+
         // stompClient.send("/app/connect", {}, message);
         let sessionId = document.getElementById('sessionId').innerText;
         let nameVideoDecode = decodeURIComponent(filename);

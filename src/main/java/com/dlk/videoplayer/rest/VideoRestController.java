@@ -1,15 +1,14 @@
 package com.dlk.videoplayer.rest;
 
+import com.dlk.videoplayer.Util.VideoListUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 import static com.dlk.videoplayer.Constantes.VIDEO_DIR;
@@ -35,18 +34,8 @@ public class VideoRestController {
     @GetMapping("/api/videos")
     public List<String> getVideoList() {
         log.info("Solicitando lista de videos");
-        File folder = new File(VIDEO_DIR);
-        File[] files = folder.listFiles();
-        List<String> videoNames = new ArrayList<>();
-
-        if (files != null) {
-            for (File file : files) {
-                if (file.isFile() && file.getName().endsWith(".mp4")) {
-                    videoNames.add(file.getName());
-                }
-            }
-        }
-
-        return videoNames;
+        return VideoListUtil.getVideoList();
     }
+
+
 }

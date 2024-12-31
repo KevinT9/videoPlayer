@@ -1,6 +1,8 @@
 package com.dlk.videoplayer.controller;
 
+import com.dlk.videoplayer.Util.VideoListUtil;
 import com.dlk.videoplayer.model.dto.MensajeDTO;
+import com.dlk.videoplayer.model.dto.VideoSession;
 import com.dlk.videoplayer.websocket.SessionStorage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,28 @@ public class VideoController {
             }
             case "chatMessage" -> {
                 log.info("Mensaje de chat: {}", mensajeDTO);
+                messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
+            }
+            case "nextVideo" -> {
+                log.info("Siguiente video: {}", mensajeDTO.getVideo().getNameVideo());
+
+                String nextVideo = VideoListUtil.getNextVideo(mensajeDTO.getVideo().getNameVideo());
+
+                VideoSession videoSession = mensajeDTO.getVideo();
+                videoSession.setNameVideo(nextVideo);
+                videoSession.setVideoUrl(VideoListUtil.modifyVideoNameUrl(videoSession.getVideoUrl(), nextVideo));
+
+                messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
+            }
+            case "previousVideo" -> {
+                log.info("Video anterior: {}", mensajeDTO.getSessionId());
+
+                String previousVideo = VideoListUtil.getPreviousVideo(mensajeDTO.getVideo().getNameVideo());
+
+                VideoSession videoSession = mensajeDTO.getVideo();
+                videoSession.setNameVideo(previousVideo);
+                videoSession.setVideoUrl(VideoListUtil.modifyVideoNameUrl(videoSession.getVideoUrl(), previousVideo));
+
                 messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
             }
         }

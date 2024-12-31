@@ -15,11 +15,15 @@
 
 <section id="videoPlayerContainer">
 <!--    Titulo del video-->
-    <h2 id="nombreVideo">Video</h2>
+    <h2 id="nombreVideo">Esperando el video...</h2>
     <video id="videoPlayer" width="800" controls>
         <source id="videoSource" type="video/mp4">
         Tu navegador no soporta el formato de video.
     </video>
+    <div id="videoControls">
+        <button id="btnAnterior">Anterior</button>
+        <button id="btnSiguiente">Siguiente</button>
+    </div>
 </section>
 
 <section id="chatContainer">
@@ -41,6 +45,9 @@
 
     // Esta función conecta al WebSocket y se suscribe al canal usando el sessionId
     function connectToWebSocket(sessionId, username) {
+
+        let nombreVideo = document.getElementById('nombreVideo');
+
         // Usamos SockJS para la conexión WebSocket
         socket = new SockJS('https://' + urlBase + '/ws/video');
         stompClient = Stomp.over(socket);
@@ -76,8 +83,6 @@
                     li.innerText = message.username + ": " + message.message;
                     chatMessages.appendChild(li);
                 } else if (message.type === "videoLoad") {
-
-                    let nombreVideo = document.getElementById('nombreVideo');
                     nombreVideo.innerText = message.video.nameVideo;
 
                     // Si el mensaje es de tipo "playVideo", cargamos el video en el reproductor
@@ -88,6 +93,17 @@
                     videoPlayer.volume = 0.3;
                     videoPlayer.load();
                     videoPlayer.play();
+
+                    // Añadir el onclick para cargar el video anterior
+                    document.getElementById("btnAnterior").onclick = function() {
+                        cargarVideoAnterior(message.video.nameVideo);
+                    };
+
+                    // Añadir el onclick para cargar el video siguiente
+                    document.getElementById("btnSiguiente").onclick = function() {
+                        cargarVideoSiguiente(message.video.nameVideo);
+                    };
+
                 } else if (message.type === "videoPause") {
                     // Si el mensaje es de tipo "videoPause", pausamos el video
                     const videoPlayer = document.getElementById('videoPlayer');
@@ -109,6 +125,46 @@
                     } else {
                         videoPlayer.pause();
                     }
+                } else if (message.type === "previousVideo") {
+                    nombreVideo.innerText = message.video.nameVideo;
+
+                    // Si el mensaje es de tipo "previousVideo", cargamos el video anterior
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    const videoSource = document.getElementById('videoSource');
+                    videoSource.src = message.video.videoUrl;
+                    videoPlayer.currentTime = message.video.currentTime;
+                    videoPlayer.load();
+                    videoPlayer.play();
+
+                    // Añadir el onclick para cargar el video anterior
+                    document.getElementById("btnAnterior").onclick = function() {
+                        cargarVideoAnterior(message.video.nameVideo);
+                    };
+
+                    // Añadir el onclick para cargar el video siguiente
+                    document.getElementById("btnSiguiente").onclick = function() {
+                        cargarVideoSiguiente(message.video.nameVideo);
+                    };
+                } else if (message.type === "nextVideo") {
+                    nombreVideo.innerText = message.video.nameVideo;
+
+                    // Si el mensaje es de tipo "nextVideo", cargamos el video siguiente
+                    const videoPlayer = document.getElementById('videoPlayer');
+                    const videoSource = document.getElementById('videoSource');
+                    videoSource.src = message.video.videoUrl;
+                    videoPlayer.currentTime = message.video.currentTime;
+                    videoPlayer.load();
+                    videoPlayer.play();
+
+                    // Añadir el onclick para cargar el video anterior
+                    document.getElementById("btnAnterior").onclick = function() {
+                        cargarVideoAnterior(message.video.nameVideo);
+                    };
+
+                    // Añadir el onclick para cargar el video siguiente
+                    document.getElementById("btnSiguiente").onclick = function() {
+                        cargarVideoSiguiente(message.video.nameVideo);
+                    };
                 }
 
             });
@@ -213,6 +269,49 @@
             sendVideoState("videoPause");
         }
     });
+
+
+    // Función para cargar el video anterior
+    function cargarVideoAnterior(filename) {
+        let sessionId = document.getElementById('sessionId').innerText;
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: "previousVideo",
+            sessionId: sessionId,
+            username: document.getElementById('username').innerText,
+            message: "Cargando video anterior",
+            video: {
+                videoUrl: "/videos/" + filename,
+                currentTime: 0,
+                isPlaying: false,
+                nameVideo: filename
+            }
+        }));
+    }
+
+    // Función para cargar el video siguiente
+    function cargarVideoSiguiente(filename) {
+        let sessionId = document.getElementById('sessionId').innerText;
+        stompClient.send("/app/connect", {}, JSON.stringify({
+            type: "nextVideo",
+            sessionId: sessionId,
+            username: document.getElementById('username').innerText,
+            message: "Cargando video siguiente",
+            video: {
+                videoUrl: "/videos/" + filename,
+                currentTime: 0,
+                isPlaying: false,
+                nameVideo: filename
+            }
+        }));
+    }
+
+    // Reproducir el siguiente video cuando se termina el actual
+    document.getElementById("videoPlayer").addEventListener("ended", () => {
+        let nombreVideo = document.getElementById('nombreVideo').innerText;
+        cargarVideoSiguiente(nombreVideo);
+    });
+
+
 </script>
 
 </body>
