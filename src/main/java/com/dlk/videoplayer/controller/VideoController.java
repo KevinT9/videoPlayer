@@ -71,9 +71,11 @@ public class VideoController {
                 messagingTemplate.convertAndSend("/topic/" + mensajeDTO.getSessionId(), mensajeDTO);
             }
             case "nextVideo" -> {
-                log.info("Siguiente video: {}", mensajeDTO.getVideo().getNameVideo());
+                log.info("comenzando busqueda del video siguiente: {}", mensajeDTO.getVideo().getNameVideo());
 
                 String nextVideo = VideoListUtil.getNextVideo(mensajeDTO.getVideo().getNameVideo());
+
+                log.info("Siguiente video: {}", nextVideo);
 
                 VideoSession videoSession = mensajeDTO.getVideo();
                 videoSession.setNameVideo(nextVideo);
